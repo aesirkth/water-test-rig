@@ -1,5 +1,57 @@
 from multiprocessing import Process, Queue
 
+def flowCheck(queue: Queue):
+  import time
+  import datetime
+  import RPi.GPIO as GPIO  
+  try:
+    GPIO.setmode(GPIO.BCM)
+    # GPIO 23 & 17 set up as inputs, pulled up to avoid false detection.  
+    # Both ports are wired to connect to GND on button press.  
+    # So we'll be setting up falling edge detection for both  
+    GPIO.setup(19, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+    totalEvents = 0
+    events = 0
+    def callback(o):
+      nonlocal events, totalEvents
+      events = events + 1
+      totalEvents = totalEvents + 1
+
+    GPIO.add_event_detect(19, GPIO.RISING, callback=callback)
+
+    while True:
+      lastStart = time.time()
+      time.sleep(1.0)
+      pulses_per_liter = 60 * 6.6
+      liters_flown_total = totalEvents / pulses_per_liter
+      liters_flown_in_interval = events / pulses_per_liter
+
+      interval = time.time() - lastStart
+      liters_per_second = liters_flown_in_interval / interval
+
+      date = datetime.datetime.utcnow()
+      now = date.timestamp()
+
+      measurement = {
+        "measurement": "flow",
+        "time": int(now*1e3),
+        "fields": {
+          "pulses": events,
+          "totalPulses": totalEvents,
+          "instantaneous": liters_per_second,
+          "total": liters_flown_total,
+        }
+      }
+      queue.put_nowait(measurement)
+      
+      events = 0
+
+
+  except KeyboardInterrupt:  
+    print("cleanup")
+    # GPIO.cleanup()
+
 def measurement(queue: Queue):
   import busio
   import digitalio
@@ -23,26 +75,24 @@ def measurement(queue: Queue):
   chan0 = AnalogIn(mcp, MCP.P0)
   chan1 = AnalogIn(mcp, MCP.P1)
 
-  channels = [chan0, chan1]
+  print("Starting...?")
 
   while True:
-    now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    date = datetime.datetime.utcnow()
+    now = date.timestamp()
 
-    for i in range(len(channels)):
-      measurement = {
-        "measurement": "adc",
-        "tags": {
-          "input": i,
-        },
-        "time": now,
-        "fields": {
-          "value": channels[i].value,
-          "voltage": channels[i].voltage
-        }
+    measurement = {
+      "measurement": "adc",
+      "time": int(now*1e3),
+      "fields": {
+        "value0": chan0.value,
+        "voltage0": chan0.voltage,
+        "value1": chan1.value,
+        "voltage1": chan1.voltage
       }
-      queue.put(measurement)
-
-    time.sleep(0.05)
+    }
+    queue.put_nowait(measurement)
+    time.sleep(0.01)
 
 def storage(queue: Queue):
   import time
@@ -51,16 +101,22 @@ def storage(queue: Queue):
 
   while True:
     batch = []
-    while len(batch) < 100:
+    while len(batch) < 20:
       batch.append(queue.get())
 
-    client.write_points(batch)
+    print("Writing batch of points")
+    client.write_points(batch, time_precision="ms")
 
 if __name__ == '__main__':
   q = Queue()
   measurementProcess = Process(target=measurement, args=(q,))
-  measurementProcess.start()
   storageProcess = Process(target=storage, args=(q,))
+  flowCheckProcess = Process(target=flowCheck, args=(q,))
+
+  measurementProcess.start()
   storageProcess.start()
+  flowCheckProcess.start()
+
   measurementProcess.join()
   storageProcess.join()
+  flowCheckProcess.join()

@@ -6,7 +6,9 @@ Injector Water Test Rig
 
 The water test rig is based around a Raspberry Pi Zero W and a [MCP3008](datasheets/MCP3008.pdf) 10-bit ADC.
 
-## Installing Linux
+## System set-up
+
+### Installing Linux & necessary software
 
 To install the right dependencies, the following guide is followed: https://www.losant.com/blog/getting-started-with-the-raspberry-pi-zero-w-without-a-monitor
 
@@ -52,4 +54,91 @@ The steps are as such (copied here for future reference):
 11. Install `pip3`:
     ```bash
     $ sudo apt-get install python3-pip -y
+    $ sudo apt-get install git -y
     ```
+
+### Installing InfluxDB
+
+(Based around the blog post written by Simon Hearne: https://simonhearne.com/2020/pi-influx-grafana/)
+
+1. Add Influx repositories:
+
+   ```bash
+   $ wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key    add -
+   $ source /etc/os-release
+   $ echo "deb https://repos.influxdata.com/debian $(lsb_release -cs)   stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+   ```
+
+2. Update apt and install InfluxDB:
+
+   ```bash
+   $ sudo apt update && sudo apt install -y influxdb
+   ```
+
+3. Start InfluxDB service (and set to start at boot):
+
+   ```bash
+   $ sudo systemctl unmask influxdb.service
+   $ sudo systemctl start influxdb
+   $ sudo systemctl enable influxdb.service
+   ```
+
+4. Set up InfluxDB database:
+
+   ```bash
+   $ influx
+
+   > create database watertestrig
+   > use watertestrig
+   > create user waterrig with password 'waterrigpw' with all privileges
+   > grant all privileges on watertestrig to waterrig
+
+   > create retention policy "rawdata" on "watertestrig" duration 24h replication 1 default
+
+   > exit
+   ```
+
+### Install Nginx
+
+```bash
+$ sudo apt install -y nginx
+```
+
+Enable the service:
+
+```bash
+$ sudo systemctl enable nginx
+```
+
+Give permissions to the folder:
+
+```bash
+$ sudo chmod +755 -R /var/www/html
+```
+
+### Installing Python dependencies
+
+```bash
+$ sudo apt-get install -y python3-numpy
+$ sudo apt-get install -y python3-matplotlib
+$ pip3 install adafruit-circuitpython-busdevice
+$ pip3 install adafruit-circuitpython-mcp3xxx
+$ pip3 install influxdb
+$ pip3 install psutil
+```
+
+### Clone (or copy) dependencies
+
+```bash
+$ git clone https://github.com/aesirkth/water-test-rig
+$ cd water-test-rig
+```
+
+## System usage
+
+Check the size of the Influx database:
+
+```bash
+$ sudo du -sh /var/lib/influxdb/data/watertestrig
+92K     /var/lib/influxdb/data/watertestrig
+```
