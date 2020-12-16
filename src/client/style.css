@@ -1,0 +1,12 @@
+#charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  grid-auto-rows: 400px;
+  grid-gap: 10px;
+}
+#calibration {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-auto-rows: 300px;
+  grid-gap: 10px;
+}

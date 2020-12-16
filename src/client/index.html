@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Water Test Rig</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <section id="calibration">
+      <div>
+        <h1>Water Test Rig</h1>
+        <h2>Calibration & settings</h2>
+        <label>
+          Zero flow voltage (0 bar):
+          <input type="number" id="zeroFlowVoltage" default-value="0.5" min="0.0" max="5.0" step="0.01" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Peak pressure voltage:
+          <input type="number" id="peakPressure" default-value="4.5" min="0.0" max="5.0" step="0.01" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Peak pressure (bar):
+          <input type="number" id="peakPressureVoltage" default-value="13.7895146" min="0.0" max="15.0" step="0.1" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Water density (kg/m^3):
+          <input type="number" id="densityOfWater" default-value="997" min="0.0" max="1500" step="5" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Time range (% of hour):
+          <input type="range" id="timeRange" default-value="100" min="0.0" max="100" step="1" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Number of injector holes:
+          <input type="number" id="injectorHoleCount" default-value="13" min="0" max="100" step="1" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Injector hole diameter (mm):
+          <input type="number" id="injectorHoleDiameter" default-value="1.5" min="0.0" max="3" step="0.01" style="width: 200px"/>
+        </label>
+        <br/>
+        <label>
+          Flow calibration factor (%):
+          <input type="number" id="flowCalibration" default-value="100" min="0.0" max="300.0" step="1" style="width: 200px"/>
+        </label>
+        <br/>
+        <button type="button" id="resetCalibration">reset</button>
+        <button type="button" id="saveCalibration">save</button>
+      </div>
+      <div id="calibrationPlot"></div>
+    </section>
+    <hr/>
+    <section id="controls">
+      <a href="data_60m.txt" id="download">download data</a>
+      <button type="button" id="refresh">refresh</button>
+    </section>
+    <div id="charts"></div>
+    <script src="lib/plotly.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
