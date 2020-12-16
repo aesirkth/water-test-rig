@@ -38,9 +38,10 @@ while True:
   instantaneous = np.array([point["instantaneous"] if not point["instantaneous"] == None else None for point in measurementPoints])
   total = np.array([point["total"] if not point["total"] == None else None for point in measurementPoints])
 
-  fig = plt.figure(figsize=(16, 8))
-
   print("Drawing")
+  import matplotlib.pyplot as plt
+  import io
+  fig = plt.figure(figsize=(16, 8))
 
   uptime = time.time() - start
 
