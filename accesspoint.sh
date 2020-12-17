@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# sudo apt install hostapd -y
-# sudo systemctl unmask hostapd
-# sudo systemctl enable hostapd
-# sudo apt install dnsmasq -y
-# sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent
-# 
+sudo apt install hostapd -y
+sudo systemctl unmask hostapd
+sudo systemctl enable hostapd
+sudo apt install dnsmasq -y
+sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent
+
 sudo service dhcpcd start
 sudo systemctl enable dhcpcd
 sudo iptables -t nat -A POSTROUTING -o usb0 -j MASQUERADE

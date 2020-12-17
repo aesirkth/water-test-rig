@@ -57,7 +57,7 @@ The steps are as such (copied here for future reference):
 
 13. Based off https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-tweaks:
 
-    1. edit the file `/etc/network/interfaces`:
+    1. Edit the file `/etc/network/interfaces`:
 
        ```bash
        $ sudo nano /etc/network/interfaces
@@ -66,34 +66,35 @@ The steps are as such (copied here for future reference):
        Add the following lines:
 
        ```
-       source-directory /etc/network/interfaces.d
-       source /etc/network/interfaces.d/*
+       source /etc/network/interfaces.d/default-usb
        ```
 
-    1. edit the file `/etc/network/interfaces.d/static-usb`:
+    1. Edit the file `/etc/network/interfaces.d/default-usb`:
 
        ```bash
-       $ sudo nano /etc/network/interfaces.d/static-usb
+       $ sudo nano /etc/network/interfaces.d/default-usb
        ```
 
        Add the following lines:
 
        ```
+       auto usb0
        allow-hotplug usb0
        iface usb0 inet static
-           address 192.168.2.2
+           metric 10
+           address 192.168.137.2
            netmask 255.255.255.0
-           network 192.168.2.0
-           broadcast 192.168.2.255
-           gateway 192.168.2.1
+           network 192.168.137.0
+           broadcast 192.168.137.255
+           gateway 192.168.137.1
            dns-nameservers 8.8.8.8
        ```
 
-    1. Set up ip route:
+    1. Make it executable:
 
-    ```bash
-    sudo ip route add default via 192.168.2.1 dev usb0
-    ```
+       ```bash
+       $ sudo chmod 755 /etc/network/interfaces.d/default-usb
+       ```
 
 14. Make sure to assign the USB Gadget interface an ip `192.168.2.1` on your computer.
 15. Reboot the pi: `sudo reboot 0`. Wait a bit and then reconnect over SSH.

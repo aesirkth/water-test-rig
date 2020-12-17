@@ -1,9 +1,13 @@
-!/bin/bash
+#!/bin/bash
 cd /home/pi
 
 echo ""
 echo "Updating repositories"
 sudo apt-get update && sudo apt-get upgrade -y
+
+echo ""
+echo "Installing bash"
+sudo apt-get install bash -y
 
 echo ""
 echo "Installing Python3"
