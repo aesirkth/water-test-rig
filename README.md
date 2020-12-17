@@ -19,34 +19,96 @@ The steps are as such (copied here for future reference):
 3. Flash the Raspbian image to the MicroSD card with Etcher
 4. Remove & reinsert the MicroSD card
 5. Create a file called `ssh` in the root of the card. This enables SSH access.
-6. Create a file called `wpa_supplicant.conf` in the root of the card and enter the following (with `LF` line endings!):
+
+6. Edit `config.txt` in the root of the card and add the following (with `LF` line endings!):
 
    ```
-   country=SE
-   ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-   update_config=1
-
-   network={
-   ssid="<ENTER SSID>"
-   scan_ssid=1
-   psk="<ENTER WIFI PASSWORD>"
-   key_mgmt=WPA-PSK
-   }
+   dtoverlay=dwc2
    ```
 
-   This sets up a connection to a Wi-Fi network.
+7. Edit `config.txt` in the root of the card and add the following after `rootwait` (with `LF` line endings!):
 
-7. Insert the MicroSD card to the Raspberry Pi Zero W and boot it up.
-8. SSH into the Raspberry Pi with its IP (check the DHCP lease table on the router or similar...):
-   ```bash
-   $ ssh pi@<ip address>
    ```
-   You will be asked if the certificate should be trusted. Answer yes.
-   The password is `raspberry`.
-9. Change the password to `aesir2020` (it doesn't matter if anybody knows this password, we're not supposed to run this Pi against the global internet) by running:
-   ```bash
-   $ passwd
+   modules-load=dwc2,g_ether
    ```
+
+   It should look like this (or similar):
+
+   ```
+   console=serial0,115200 console=tty1 root=PARTUUID=075f9017-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether
+   ```
+
+8. Make sure that your computer supports Bonjour: https://learn.adafruit.com/bonjour-zeroconf-networking-for-windows-and-linux/
+9. Enable network forwarding from your computer to the RPI: https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-tweaks
+   The pi will not yet have access to the network, so some work remains.
+
+10. Insert the MicroSD card to the Raspberry Pi Zero W and boot it up.
+11. SSH into the Raspberry Pi with its IP (check the DHCP lease table on the router or similar...):
+    ```bash
+    $ ssh pi@<ip address>
+    ```
+    You will be asked if the certificate should be trusted. Answer yes.
+    The password is `raspberry`.
+12. Change the password to `aesir2020` (it doesn't matter if anybody knows this password, we're not supposed to run this Pi against the global internet) by running:
+
+    ```bash
+    $ passwd
+    ```
+
+13. Based off https://learn.adafruit.com/turning-your-raspberry-pi-zero-into-a-usb-gadget/ethernet-tweaks:
+
+    1. edit the file `/etc/network/interfaces`:
+
+       ```bash
+       $ sudo nano /etc/network/interfaces
+       ```
+
+       Add the following lines:
+
+       ```
+       source-directory /etc/network/interfaces.d
+       source /etc/network/interfaces.d/*
+       ```
+
+    1. edit the file `/etc/network/interfaces.d/static-usb`:
+
+       ```bash
+       $ sudo nano /etc/network/interfaces.d/static-usb
+       ```
+
+       Add the following lines:
+
+       ```
+       allow-hotplug usb0
+       iface usb0 inet static
+           address 192.168.2.2
+           netmask 255.255.255.0
+           network 192.168.2.0
+           broadcast 192.168.2.255
+           gateway 192.168.2.1
+           dns-nameservers 8.8.8.8
+       ```
+
+    1. Set up ip route:
+
+    ```bash
+    sudo ip route add default via 192.168.2.1 dev usb0
+    ```
+
+14. Make sure to assign the USB Gadget interface an ip `192.168.2.1` on your computer.
+15. Reboot the pi: `sudo reboot 0`. Wait a bit and then reconnect over SSH.
+16. Verify that you can ping google: `ping google.se`
+
+From here on, the simplest method for automated installation is to run the `install.sh` over `ssh`:
+
+```bash
+ssh pi@raspberrypi.local < install.sh
+```
+
+This will run all the next steps automatically. It should be fine to run this file multiple times.
+
+### Upgrade software
+
 10. Update the software on the Pi (this might take a few minutes, so grab some drink):
     ```bash
     $ sudo apt-get update && sudo apt-get upgrade -y
@@ -54,6 +116,9 @@ The steps are as such (copied here for future reference):
 11. Install `pip3`:
     ```bash
     $ sudo apt-get install python3-pip -y
+    ```
+12. Install `git`:
+    ```bash
     $ sudo apt-get install git -y
     ```
 
@@ -119,12 +184,9 @@ $ sudo chmod +755 -R /var/www/html
 ### Installing Python dependencies
 
 ```bash
-$ sudo apt-get install -y python3-numpy
-$ sudo apt-get install -y python3-matplotlib
 $ pip3 install adafruit-circuitpython-busdevice
 $ pip3 install adafruit-circuitpython-mcp3xxx
 $ pip3 install influxdb
-$ pip3 install psutil
 ```
 
 ### Clone (or copy) dependencies

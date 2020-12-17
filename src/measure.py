@@ -97,7 +97,7 @@ def measurement(queue: Queue):
 def storage(queue: Queue):
   import time
   from influxdb import InfluxDBClient
-  client = InfluxDBClient('localhost', 8086, 'waterrig', 'waterrigpw', 'watertestrig')
+  client = InfluxDBClient('localhost', 8086, 'waterrig', 'waterrigpw', 'watertestrig', timeout=5, retries=0)
 
   while True:
     batch = []
@@ -108,15 +108,16 @@ def storage(queue: Queue):
     client.write_points(batch, time_precision="ms")
 
 if __name__ == '__main__':
+  import time
   q = Queue()
-  measurementProcess = Process(target=measurement, args=(q,))
+  print("Delaying start-up with 10 seconds")
+  time.sleep(10)
   storageProcess = Process(target=storage, args=(q,))
-  flowCheckProcess = Process(target=flowCheck, args=(q,))
+  measurementProcess = Process(target=measurement, args=(q,), daemon=True)
+  flowCheckProcess = Process(target=flowCheck, args=(q,), daemon=True)
 
   measurementProcess.start()
   storageProcess.start()
   flowCheckProcess.start()
 
-  measurementProcess.join()
   storageProcess.join()
-  flowCheckProcess.join()

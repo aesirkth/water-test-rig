@@ -6,7 +6,7 @@ import dateutil.parser
 
 from influxdb import InfluxDBClient
 
-client = InfluxDBClient('localhost', 8086, 'waterrig', 'waterrigpw', 'watertestrig')
+client = InfluxDBClient('localhost', 8086, 'waterrig', 'waterrigpw', 'watertestrig', timeout=5, retries=0)
 
 start = time.time()
 while True:
