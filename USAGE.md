@@ -58,3 +58,5 @@ From there, you should be able to pull the latest changes and simply run the `in
 ```bash
 $ git pull && bash install.sh skip-install
 ```
+
+The `skip-install` flag simply skips updating some native dependencies.
