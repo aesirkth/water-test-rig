@@ -53,4 +53,8 @@ You should just by SSH'ing have ended up in the `/home/pi` directory. Go to the 
 $ cd /home/pi/water-test-rig/
 ```
 
-From there, you should be able to simply run the `install.sh` script.
+From there, you should be able to pull the latest changes and simply run the `install.sh` script:
+
+```bash
+$ git pull && bash install.sh skip-install
+```

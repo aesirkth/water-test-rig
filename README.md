@@ -90,6 +90,8 @@ The steps are as such (copied here for future reference):
            dns-nameservers 8.8.8.8
        ```
 
+       **Make sure that the above NEVER ends up in `/etc/network/interfaces`, as this will cause the DHCP server to never start.**
+
     1. Make it executable:
 
        ```bash

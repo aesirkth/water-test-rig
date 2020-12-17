@@ -1,56 +1,58 @@
 #!/bin/bash
 cd /home/pi
 
-echo ""
-echo "Updating repositories"
-sudo apt-get update && sudo apt-get upgrade -y
+if [ $1 != "skip-install" ]
+then
+  echo ""
+  echo "Updating repositories"
+  sudo apt-get update && sudo apt-get upgrade -y
 
-echo ""
-echo "Installing bash"
-sudo apt-get install bash -y
+  echo ""
+  echo "Installing bash"
+  sudo apt-get install bash -y
 
-echo ""
-echo "Installing Python3"
-sudo apt-get install python3-pip -y
+  echo ""
+  echo "Installing Python3"
+  sudo apt-get install python3-pip -y
 
-echo ""
-echo "Installing git"
-sudo apt-get install git -y
+  echo ""
+  echo "Installing git"
+  sudo apt-get install git -y
 
-echo ""
-echo "Installing InfluxDB"
-wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key    add -
-source /etc/os-release
-echo "deb https://repos.influxdata.com/debian $(lsb_release -cs)   stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
-sudo apt-get update && sudo apt-get upgrade -y
-sudo apt install -y influxdb
+  echo ""
+  echo "Installing InfluxDB"
+  wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key    add -
+  source /etc/os-release
+  echo "deb https://repos.influxdata.com/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+  sudo apt-get update && sudo apt-get upgrade -y
+  sudo apt install -y influxdb
 
-echo ""
-echo "Starting InfluxDB service"
-sudo systemctl unmask influxdb.service
-sudo systemctl start influxdb
-sudo systemctl enable influxdb.service
-sudo systemctl daemon-reload
+  echo ""
+  echo "Starting InfluxDB service"
+  sudo systemctl unmask influxdb.service
+  sudo systemctl start influxdb
+  sudo systemctl enable influxdb.service
+  sudo systemctl daemon-reload
 
-echo ""
-echo "Installing Nginx"
-sudo apt install -y nginx
-sudo chmod +755 -R /var/www/html
+  echo ""
+  echo "Installing Nginx"
+  sudo apt install -y nginx
+  sudo chmod +755 -R /var/www/html
 
-INFLUX_COMMAND="create database watertestrig;
-use watertestrig;
-create user waterrig with password 'waterrigpw' with all privileges;
-grant all privileges on watertestrig to waterrig;
-create retention policy \"rawdata\" on \"watertestrig\" duration 24h replication 1 default;"
-influx -execute "$INFLUX_COMMAND"
+  INFLUX_COMMAND="create database watertestrig;
+  use watertestrig;
+  create user waterrig with password 'waterrigpw' with all privileges;
+  grant all privileges on watertestrig to waterrig;
+  create retention policy \"rawdata\" on \"watertestrig\" duration 24h replication 1 default;"
+  influx -execute "$INFLUX_COMMAND"
 
 
-echo ""
-echo "Starting Nginx service"
-sudo systemctl start nginx
-sudo systemctl enable nginx
-sudo systemctl daemon-reload
-
+  echo ""
+  echo "Starting Nginx service"
+  sudo systemctl start nginx
+  sudo systemctl enable nginx
+  sudo systemctl daemon-reload
+fi
 
 echo ""
 echo "Setting Nginx configuration"
