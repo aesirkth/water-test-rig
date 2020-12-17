@@ -123,7 +123,7 @@ echo "Cloning repository"
 REPO_DIR=~/water-test-rig
 
 if [ -d "$REPO_DIR" ]; then
- echo "Deleted existing repository" # delete if exists
+  echo "Deleted existing repository" # delete if exists
   rm -rf $REPO_DIR
 fi
 
