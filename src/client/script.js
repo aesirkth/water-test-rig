@@ -20,8 +20,7 @@ function mapWithNulls(data, selector, fn = null) {
 }
 
 async function getCSV() {
-  const url =
-    "http://192.168.150.195/data_60m.txt?time" + encodeURIComponent(Date.now());
+  const url = "data_60m.txt?time" + encodeURIComponent(Date.now());
   const res = await fetch(url);
   document.getElementById("download").setAttribute("href", url);
   const text = await res.text();
